@@ -26,6 +26,7 @@ signal game_error(what)
 
 
 func _ready():
+	print("resday")
 	RivetHelper.start_server.connect(start_server)
 	RivetHelper.setup_multiplayer()
 

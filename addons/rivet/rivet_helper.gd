@@ -1,6 +1,10 @@
 extends Node
 
+## Triggered if running a dedicated server.
 signal start_server()
+
+## Triggered if running a client.
+signal start_client()
 
 var multiplayer_setup = false
 
@@ -16,11 +20,6 @@ var player_tokens = {}
 var player_token = null
 
 
-func _ready():
-	var dotenv = DotEnv.new()
-	dotenv.config()
-
-
 ## Determines if running as a dedicated server.
 func is_dedicated_server() -> bool:
 	return OS.get_cmdline_user_args().has("--server")
@@ -28,6 +27,8 @@ func is_dedicated_server() -> bool:
 
 ## Sets up the authentication hooks on SceneMultiplayer.
 func setup_multiplayer():
+	print("called")
+	assert(!multiplayer_setup, "RivetHelper.setup_multiplayer already called")
 	multiplayer_setup = true
 	
 	var scene_multiplayer = multiplayer as SceneMultiplayer
@@ -43,6 +44,19 @@ func setup_multiplayer():
 	if is_dedicated_server():
 		rivet_print("Starting server")
 		start_server.emit()
+		
+		RivetClient.lobby_ready({}, _lobby_ready, _lobby_ready_fail)
+	else:
+		rivet_print("Starting client")
+		start_client.emit()
+
+
+func _lobby_ready(_body):
+	rivet_print("Lobby ready")
+
+
+func _lobby_ready_fail(_body):
+	OS.crash("Lobby ready failed")
 
 
 ## Sets the player token for the next authentication challenge.

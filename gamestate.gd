@@ -45,7 +45,13 @@ func start_server():
 	peer.create_server(DEFAULT_PORT, MAX_PEERS)
 	multiplayer.set_multiplayer_peer(peer)
 	
-	RivetClient.lobby_ready({}, func(_x): pass, func(_x): pass)
+	# var response = (await RivetGlobal
+	# 	.lobby_ready({})
+	# 	.request()
+	# 	.wait_completed()
+	# )
+
+	# print(response)
 
 
 # Callback from SceneTree.
@@ -117,14 +123,33 @@ func load_world():
 
 
 func join_game(new_player_name):
+	print("Joining game as %s" % new_player_name)
 	player_name = new_player_name
 	
-	RivetClient.find_lobby({
-		"game_modes": ["default"]
-	}, _lobby_found, _lobby_find_failed)
+	(RivetGlobal
+		.find_lobby({
+			"game_modes": ["default"]
+		}) 
+		.set_success_callback(_lobby_found)
+		.set_failure_callback(_lobby_find_failed)
+		.request()
+	)
+
+	# var response = await Rivet.find_lobby({}).wait_until_the_request_has_been_finished_and_returned_some_output()
+	var response = await Rivet.matchmaker.lobby.find({})
+
+
+	# Get the signal
+	# var sig = resp.completed
+	
+
+	# Connect the signal to a function
+	# sig.connect(_lobby_found)
+
 
 
 func _lobby_found(response):
+	print("Lobby found: ", response)
 	RivetHelper.set_player_token(response.player.token)
 	
 	var port = response.ports.default
@@ -136,6 +161,7 @@ func _lobby_found(response):
 
 
 func _lobby_find_failed(error):
+	print("Lobby find failed: ", error)
 	game_error.emit(error)
 
 

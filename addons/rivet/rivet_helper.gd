@@ -45,7 +45,27 @@ func setup_multiplayer():
 		rivet_print("Starting server")
 		start_server.emit()
 		
-		RivetClient.lobby_ready({}, _lobby_ready, _lobby_ready_fail)
+		# 
+		# var request = RivetGlobal.lobby_ready({})
+		# var response = request.request()
+		# We now have the response object
+
+		# If we want the request to call functions when it finishes, we can
+		# build it like this
+		(RivetGlobal
+			.lobby_ready({})
+			.set_success_callback(_lobby_ready)
+			.set_failure_callback(_lobby_ready_fail)
+			.request()
+		)
+
+		# If we want to get the response back and wait on it. This will block
+		# the function, but not execution?
+		# request = RivetGlobal.lobby_ready({})
+		# # Need to start the request
+		# request.request()
+		# # Wait for the request to finish
+		# response = await request.wait_completed()
 	else:
 		rivet_print("Starting client")
 		start_client.emit()
@@ -77,9 +97,17 @@ func _auth_callback(id: int, buf: PackedByteArray):
 		
 		rivet_print("Player authenticating %s: %s" % [id, data])
 		player_tokens[id] = data.player_token
-		RivetClient.player_connected({
-			"player_token": data.player_token
-		}, _rivet_player_connected.bind(id), _rivet_player_connect_failed.bind(id))
+		# RivetGlobal.player_connected({
+		# 	"player_token": data.player_token
+		# }, _rivet_player_connected.bind(id), _rivet_player_connect_failed.bind(id))
+		(RivetGlobal
+			.player_connected({
+				"player_token": data.player_token
+			})
+			.set_success_callback(_rivet_player_connected.bind(id))
+			.set_failure_callback(_rivet_player_connect_failed.bind(id))
+			.request()
+		)
 	else:
 		# Auto-approve if not a server
 		(multiplayer as SceneMultiplayer).complete_auth(id)
@@ -101,9 +129,17 @@ func _player_disconnected(id):
 		player_tokens.erase(id)
 		rivet_print("Removing player %s" % player_token)
 		
-		RivetClient.player_disconnected({
-			"player_token": player_token
-		}, func(_x): pass, func(_x): pass)
+		# RivetGlobal.player_disconnected({
+		# 	"player_token": player_token
+		# }, func(_x): pass, func(_x): pass)
+		(RivetGlobal
+			.player_disconnected({
+				"player_token": player_token
+			})
+			.set_success_callback(func(_x): pass)
+			.set_failure_callback(func(_x): pass)
+			.request()
+		)
 
 func _rivet_player_connected(_body, id: int):
 	rivet_print("Player authenticated for %s" % id)

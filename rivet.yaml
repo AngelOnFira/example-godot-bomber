@@ -15,7 +15,7 @@ engine:
 matchmaker:
   max_players: 12
   regions:
-    lnd-sfo: {}
+    lnd-atl: {}
     lnd-fra: {}
   docker:
     dockerfile: "Dockerfile"

@@ -9,33 +9,48 @@ signal completed
 const _RivetResponse := preload("rivet_response.gd")
 const _RivetRequest := preload("rivet_request.gd")
 
-var _response: _RivetResponse = null
+var response: _RivetResponse = null
 var _opts: Dictionary
 var _http_request: HTTPRequest
+
+var _success_callback: Callable
+var _failure_callback: Callable
 
 
 func _init(owner: Node, method: HTTPClient.Method, url: String, opts: Variant = null):
 	self._http_request = HTTPRequest.new()
-	_http_request.request_completed.connect(_on_request_completed)
-	_opts = {
+	self._http_request.request_completed.connect(_on_request_completed)
+	self._opts = {
 		"method": method,
 		"url": url,
 		"body": opts.body,
 		"headers": opts.headers,
 	}
 	owner.add_child(self._http_request)
+	self._http_request.request(_opts.url, _opts.headers, _opts.method, _opts.body)
+	# Print the url, headers, and body for debugging
+	print("RivetRequest: " + str(_opts))
 
-## Runs the request
-func request() -> _RivetRequest:
-	var error = _http_request.request(_opts.url, _opts.headers, _opts.method, _opts.body)
+func set_success_callback(callback: Callable) -> _RivetRequest:
+	self._success_callback = callback
+	return self
+
+func set_failure_callback(callback: Callable) -> _RivetRequest:
+	self._failure_callback = callback
 	return self
 
 func _on_request_completed(result, response_code, headers, body):
-	_response = _RivetResponse.new(result, response_code, headers, body)
+	self.response = _RivetResponse.new(result, response_code, headers, body)
+	if result == OK:
+		if self._success_callback:
+			self._success_callback.call(response)
+	else:
+		if self._failure_callback:
+			self._failure_callback.call(response)
 	completed.emit()
 
 ## Waits for the request to complete and returns the response in non-blocking way
 func wait_completed() -> _RivetResponse:
 	await completed
-	return _response
+	return response
 

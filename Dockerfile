@@ -13,4 +13,4 @@ RUN apt update -y \
 COPY --from=builder /app/build/linux/ /app
 
 # Unbuffer output so the logs get flushed
-CMD ["sh", "-c", "unbuffer /app/game.x86_64 --verbose --headless -- --server | cat"]
+CMD ["sh", "-c", "echo 'test' && unbuffer /app/game.x86_64 --verbose --headless -- --server | cat"]

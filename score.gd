@@ -17,7 +17,7 @@ func _process(_delta):
 
 
 func increase_score(for_who):
-	assert(for_who in player_labels)
+	RivetHelper._assert(for_who in player_labels)
 	var pl = player_labels[for_who]
 	pl.score += 1
 	pl.label.set_text(pl.name + "\n" + str(pl.score))

@@ -28,7 +28,7 @@ func is_dedicated_server() -> bool:
 ## Sets up the authentication hooks on SceneMultiplayer.
 func setup_multiplayer():
 	print("called")
-	assert(!multiplayer_setup, "RivetHelper.setup_multiplayer already called")
+	RivetHelper._assert(!multiplayer_setup, "RivetHelper.setup_multiplayer already called")
 	multiplayer_setup = true
 	
 	var scene_multiplayer = multiplayer as SceneMultiplayer
@@ -52,12 +52,20 @@ func setup_multiplayer():
 
 		# If we want the request to call functions when it finishes, we can
 		# build it like this
-		(RivetGlobal
-			.lobby_ready({})
-			.set_success_callback(_lobby_ready)
-			.set_failure_callback(_lobby_ready_fail)
-			.request()
-		)
+		# (RivetGlobal
+		# 	.lobby_ready({})
+		# 	.set_success_callback(_lobby_ready)
+		# 	.set_failure_callback(_lobby_ready_fail)
+		# 	.request()
+		# )
+
+		# var response = await Rivet.matchmaker.lobby.ready({})
+
+		# if response == OK:
+		# 	rivet_print("Lobby ready")
+		# else:
+		# 	OS.crash("Lobby ready failed")
+
 
 		# If we want to get the response back and wait on it. This will block
 		# the function, but not execution?
@@ -71,18 +79,10 @@ func setup_multiplayer():
 		start_client.emit()
 
 
-func _lobby_ready(_body):
-	rivet_print("Lobby ready")
-
-
-func _lobby_ready_fail(_body):
-	OS.crash("Lobby ready failed")
-
-
 ## Sets the player token for the next authentication challenge.
 func set_player_token(_player_token: String):
-	assert(multiplayer_setup, "RivetHelper.setup_multiplayer has not been called")
-	assert(!is_dedicated_server(), "cannot called RivetHelper.set_player_token on server")
+	RivetHelper._assert(multiplayer_setup, "RivetHelper.setup_multiplayer has not been called")
+	RivetHelper._assert(!is_dedicated_server(), "cannot called RivetHelper.set_player_token on server")
 	player_token = _player_token
 
 
@@ -100,14 +100,23 @@ func _auth_callback(id: int, buf: PackedByteArray):
 		# RivetGlobal.player_connected({
 		# 	"player_token": data.player_token
 		# }, _rivet_player_connected.bind(id), _rivet_player_connect_failed.bind(id))
-		(RivetGlobal
-			.player_connected({
-				"player_token": data.player_token
-			})
-			.set_success_callback(_rivet_player_connected.bind(id))
-			.set_failure_callback(_rivet_player_connect_failed.bind(id))
-			.request()
-		)
+		# (RivetGlobal
+		# 	.player_connected({
+		# 		"player_token": data.player_token
+		# 	})
+		# 	.set_success_callback(_rivet_player_connected.bind(id))
+		# 	.set_failure_callback(_rivet_player_connect_failed.bind(id))
+		# 	.request()
+		# )
+
+		var response = await Rivet.matchmaker.player.connected({
+			"player_token": data.player_token
+		})
+
+		if response == OK:
+			_rivet_player_connected.bind(id)
+		else:
+			_rivet_player_connect_failed.bind(id)
 	else:
 		# Auto-approve if not a server
 		(multiplayer as SceneMultiplayer).complete_auth(id)
@@ -132,14 +141,18 @@ func _player_disconnected(id):
 		# RivetGlobal.player_disconnected({
 		# 	"player_token": player_token
 		# }, func(_x): pass, func(_x): pass)
-		(RivetGlobal
-			.player_disconnected({
-				"player_token": player_token
-			})
-			.set_success_callback(func(_x): pass)
-			.set_failure_callback(func(_x): pass)
-			.request()
-		)
+		# (RivetGlobal
+		# 	.player_disconnected({
+		# 		"player_token": player_token
+		# 	})
+		# 	.set_success_callback(func(_x): pass)
+		# 	.set_failure_callback(func(_x): pass)
+		# 	.request()
+		# )
+
+		var response = await Rivet.matchmaker.player.disconnected({
+			"player_token": player_token
+		})
 
 func _rivet_player_connected(_body, id: int):
 	rivet_print("Player authenticated for %s" % id)
@@ -152,3 +165,7 @@ func _rivet_player_connect_failed(error, id: int):
 
 func rivet_print(message: String):
 	print("[Rivet] %s" % message)
+
+func _assert(condition: bool, message: String = "Assertion failed"):
+	if not condition:
+		OS.crash(message)

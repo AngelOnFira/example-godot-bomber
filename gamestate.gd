@@ -51,6 +51,23 @@ func start_server():
 	# 	.wait_completed()
 	# )
 
+	var response = await Rivet.matchmaker.lobby.ready({})
+	print("done!")
+	print(response.result)
+	print(response.response_code)
+	print(response.headers)
+	print(response.body)
+
+	if response.result == OK:
+		RivetHelper.rivet_print("Lobby ready")
+	else:
+		RivetHelper.rivet_print("Lobby ready failed")
+		OS.crash("Lobby ready failed")
+
+	# var resp = await Rivet.matchmaker.lobby.ready({})
+
+
+
 	# print(response)
 
 
@@ -126,18 +143,41 @@ func join_game(new_player_name):
 	print("Joining game as %s" % new_player_name)
 	player_name = new_player_name
 	
-	(RivetGlobal
-		.find_lobby({
-			"game_modes": ["default"]
-		}) 
-		.set_success_callback(_lobby_found)
-		.set_failure_callback(_lobby_find_failed)
-		.request()
-	)
+	# (RivetGlobal
+	# 	.find_lobby({
+	# 		"game_modes": ["default"]
+	# 	}) 
+	# 	.set_success_callback(_lobby_found)
+	# 	.set_failure_callback(_lobby_find_failed)
+	# 	.request()
+	# )
 
 	# var response = await Rivet.find_lobby({}).wait_until_the_request_has_been_finished_and_returned_some_output()
-	var response = await Rivet.matchmaker.lobby.find({})
+	#var response = await Rivet.matchmaker.lobby.find({}).async()
+	#var response = await Rivet.matchmaker.lobby.find({}).wait()
+	#var response = await
+	#Rivet.matchmaker.lobby.find({}).wait_until_the_request_has_been_finished_and_returned_some_output()
 
+	# async await
+	var response = await Rivet.matchmaker.lobby.find({
+		"game_modes": ["default"]
+	})
+	
+	print(response)
+
+	if response.result == OK:
+		print("Lobby found: ", response)
+		RivetHelper.set_player_token(response.player.token)
+		
+		var port = response.ports.default
+		print("Connecting to ", port.host)
+		
+		peer = ENetMultiplayerPeer.new()
+		peer.create_client(port.hostname, port.port)
+		multiplayer.set_multiplayer_peer(peer)
+	else:
+		print("Lobby find failed: ", error)
+		game_error.emit(error)
 
 	# Get the signal
 	# var sig = resp.completed
@@ -145,24 +185,6 @@ func join_game(new_player_name):
 
 	# Connect the signal to a function
 	# sig.connect(_lobby_found)
-
-
-
-func _lobby_found(response):
-	print("Lobby found: ", response)
-	RivetHelper.set_player_token(response.player.token)
-	
-	var port = response.ports.default
-	print("Connecting to ", port.host)
-	
-	peer = ENetMultiplayerPeer.new()
-	peer.create_client(port.hostname, port.port)
-	multiplayer.set_multiplayer_peer(peer)
-
-
-func _lobby_find_failed(error):
-	print("Lobby find failed: ", error)
-	game_error.emit(error)
 
 
 func get_player_list():

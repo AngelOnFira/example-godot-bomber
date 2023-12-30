@@ -4,7 +4,6 @@ extends RefCounted
 ## To run a request, create a new RivetRequest, connect to the completed signal,
 ## and call `request().wait_completed()` to wait for the request to complete.
 
-signal completed
 
 const _RivetResponse := preload("rivet_response.gd")
 const _RivetRequest := preload("rivet_request.gd")
@@ -16,6 +15,9 @@ var _http_request: HTTPRequest
 var _success_callback: Callable
 var _failure_callback: Callable
 
+signal completed(response: _RivetResponse)
+signal succeeded(response: _RivetResponse)
+signal failed(response: _RivetResponse)
 
 func _init(owner: Node, method: HTTPClient.Method, url: String, opts: Variant = null):
 	self._http_request = HTTPRequest.new()
@@ -42,15 +44,21 @@ func set_failure_callback(callback: Callable) -> _RivetRequest:
 func _on_request_completed(result, response_code, headers, body):
 	self.response = _RivetResponse.new(result, response_code, headers, body)
 	if result == OK:
+		succeeded.emit(response)
 		if self._success_callback:
 			self._success_callback.call(response)
 	else:
+		failed.emit(response)
 		if self._failure_callback:
 			self._failure_callback.call(response)
-	completed.emit()
+	completed.emit(response)
 
 ## Waits for the request to complete and returns the response in non-blocking way
 func wait_completed() -> _RivetResponse:
 	await completed
 	return response
+
+## Waits for the request to complete and returns the response in non-blocking way
+func wait_completed2():
+	return completed
 

@@ -166,18 +166,18 @@ func join_game(new_player_name):
 	print(response)
 
 	if response.result == OK:
-		print("Lobby found: ", response)
-		RivetHelper.set_player_token(response.player.token)
+		print("Lobby found: ", response.body)
+		RivetHelper.set_player_token(response.body.player.token)
 		
-		var port = response.ports.default
+		var port = response.body.ports.default
 		print("Connecting to ", port.host)
 		
 		peer = ENetMultiplayerPeer.new()
 		peer.create_client(port.hostname, port.port)
 		multiplayer.set_multiplayer_peer(peer)
 	else:
-		print("Lobby find failed: ", error)
-		game_error.emit(error)
+		print("Lobby find failed: ", response)
+		game_error.emit(response.body)
 
 	# Get the signal
 	# var sig = resp.completed

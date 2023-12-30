@@ -97,26 +97,22 @@ func _auth_callback(id: int, buf: PackedByteArray):
 		
 		rivet_print("Player authenticating %s: %s" % [id, data])
 		player_tokens[id] = data.player_token
-		# RivetGlobal.player_connected({
-		# 	"player_token": data.player_token
-		# }, _rivet_player_connected.bind(id), _rivet_player_connect_failed.bind(id))
-		# (RivetGlobal
-		# 	.player_connected({
-		# 		"player_token": data.player_token
-		# 	})
-		# 	.set_success_callback(_rivet_player_connected.bind(id))
-		# 	.set_failure_callback(_rivet_player_connect_failed.bind(id))
-		# 	.request()
-		# )
 
 		var response = await Rivet.matchmaker.player.connected({
 			"player_token": data.player_token
 		})
 
-		if response == OK:
+		print(response.result)
+		print(response.response_code)
+		print(response.body)
+		print(response.headers)
+
+		if response.result == OK:
 			_rivet_player_connected.bind(id)
+			print("pass")
 		else:
 			_rivet_player_connect_failed.bind(id)
+			print("fail")
 	else:
 		# Auto-approve if not a server
 		(multiplayer as SceneMultiplayer).complete_auth(id)

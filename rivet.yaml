@@ -13,7 +13,7 @@ engine:
   godot:
   
 matchmaker:
-  max_players: 12
+  max_players: 100
   regions:
     lnd-atl: {}
     lnd-fra: {}

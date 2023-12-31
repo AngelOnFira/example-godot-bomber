@@ -30,8 +30,6 @@ func _init(owner: Node, method: HTTPClient.Method, url: String, opts: Variant = 
 	}
 	owner.add_child(self._http_request)
 	self._http_request.request(_opts.url, _opts.headers, _opts.method, _opts.body)
-	# Print the url, headers, and body for debugging
-	print("RivetRequest: " + str(_opts))
 
 func set_success_callback(callback: Callable) -> _RivetRequest:
 	self._success_callback = callback

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://jhdlqsokif5o"]
 
-[ext_resource type="Script" path="res://lobby.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/lobby.gd" id="1_q5pu8"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
-script = ExtResource("1")
+script = ExtResource("1_q5pu8")
 
 [node name="Players" type="Panel" parent="."]
 visible = false

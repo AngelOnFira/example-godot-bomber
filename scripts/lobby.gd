@@ -15,6 +15,9 @@ func _ready():
 		var desktop_path = OS.get_system_dir(0).replace("\\", "/").split("/")
 		$Connect/Name.text = desktop_path[desktop_path.size() - 2]
 
+	if !RivetHelper.is_dedicated_server():
+		_on_join_pressed()
+
 
 func _on_join_pressed():
 	if $Connect/Name.text == "":

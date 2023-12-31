@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bh4gbjcayios1"
-path="res://.godot/imported/rock_bit.png-cd30ec3dce7edf848ee632b29d4d0c95.ctex"
+uid="uid://bsqovikudjr0q"
+path="res://.godot/imported/charwalk.png-faa1106936dc3ced598a0e10a43eb5e9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://rock_bit.png"
-dest_files=["res://.godot/imported/rock_bit.png-cd30ec3dce7edf848ee632b29d4d0c95.ctex"]
+source_file="res://assets/charwalk.png"
+dest_files=["res://.godot/imported/charwalk.png-faa1106936dc3ced598a0e10a43eb5e9.ctex"]
 
 [params]
 
